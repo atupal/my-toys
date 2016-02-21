@@ -79,7 +79,7 @@ void set_cursor(int offset) {
 /* Advance the text cursor, scrolling the video buffer if necessary.  */
 int handle_scrolling(int cursor_offset) {
   // if the cursor is within the screen, return it unmodified.
-  if (cursor_offset < MAX_COLS*MAX_COLS*2) {
+  if (cursor_offset < MAX_ROWS*MAX_COLS*2) {
     return cursor_offset;
   }
 
@@ -93,8 +93,14 @@ int handle_scrolling(int cursor_offset) {
 
   /* Blank the last line by setting all bytes to 0 */
   char *last_line = (char*)( get_screen_offset(0, MAX_ROWS-1) + VIDEO_ADDRESS );
+  /* BUG: if we set the memory in attrbute byte to zero. when scrool the last line. The cursor will not visible 
   for (i = 0; i < MAX_COLS*2; ++ i) {
     last_line[i] = 0;
+  }
+  */
+  for (i = 0; i < MAX_COLS; ++ i) {
+    last_line[i*2] = 0;
+    last_line[i*2+1] = WHITE_ON_BLACK;
   }
 
   // Move the offset back one row, such that it is now on the last
@@ -119,4 +125,19 @@ void print_at(char *message, int col, int row) {
 
 void print(char *message) {
   print_at(message, -1, -1);
+}
+
+void clear_screen() {
+  int row = 0;
+  int col = 0;
+
+  /* Loop through video memory and write blak characters. */
+  for (row = 0; row < MAX_ROWS; ++ row) {
+    for (col = 0; col < MAX_COLS; ++ col) {
+      print_char(' ', col, row, WHITE_ON_BLACK);
+    }
+  }
+
+  // Move the cursor back to the top left
+  set_cursor(get_screen_offset(0, 0));
 }
