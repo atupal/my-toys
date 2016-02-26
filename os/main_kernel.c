@@ -1,4 +1,6 @@
 #include "drivers/screen.h"
+#include "drivers/keyboard.h"
+#include "kernel/kernel.h"
 
 void main() {
   // Create a pointer to a char, and point it to the first text cell of 
@@ -24,7 +26,41 @@ void main() {
   *(video_memory+23) = '!';
   */
 
-  print("\n");
+  clear_screen();
+
+  set_cursor(get_screen_offset(0, MAX_ROWS-1));
   print("atupal >>");
+
+  char c = 0;
+  while (1) {
+    if (port_byte_in(0x60) != c) {
+      c = port_byte_in(0x60);
+      if (c > 0) {
+        char s[4];
+
+        s[0] = (c / 16);
+        if (s[0] > 9) {
+          s[0] = 'a' + s[0] - 10;
+        }
+        else {
+          s[0] = s[0] + '0';
+        }
+
+        s[1]  =(c % 16);
+        if (s[1] > 9) {
+          s[1] = 'a' + s[1] - 10;
+        }
+        else {
+          s[1] = s[1] + '0';
+        }
+
+        s[2] = ' ';
+        //print("0x");
+        //print(s);
+        print_char(kbdmap[(c-1)*4], -1, -1, 0);
+
+      }
+    }
+  }
 
 }
