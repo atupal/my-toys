@@ -2,8 +2,8 @@
 C_SOURCES = $(wildcard kernel/*.c drivers/*.c)
 OBJ = $(C_SOURCES:.c=.o)
 
-kernel: bios kernel.c zero ${OBJ}
-	gcc -ffreestanding -c kernel.c -o kernel.o -m32
+kernel: bios main_kernel.c zero ${OBJ}
+	gcc -ffreestanding -c main_kernel.c -o kernel.o -m32
 	# previously we have compiled assembly into a raw binary format, because we wanted
 	# to run it as boot sector code on the CPU, but for this piece of code cannot stand alone,
 	# without having that label resolved, so we must compile it as follows as an object file,
@@ -17,7 +17,12 @@ kernel: bios kernel.c zero ${OBJ}
 run: kernel
 	#qemu-system-i386 os-image
 	qemu-system-x86_64 os-image
-	# bochs -f bochs.conf
+	#bochs -f bochs.conf
+
+run_bochs: kernel
+	#qemu-system-i386 os-image
+	#qemu-system-x86_64 os-image
+	bochs -f bochs.conf
 
 runb: kernel
 	bochs -f bochs.conf
@@ -47,3 +52,4 @@ zero:
 clean:
 	rm -fr *.bin *.o
 	rm -fr kernel/*.o drivers/*.o
+	rm "os-image"
